@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>零接触装机实录：AI 远程把一台 Windows 台式机变成 Ubuntu 双系统服务器</title>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#ffffff; --ink:#1a1d23; --sub:#5b6472;
+  --line:#e4e7ec; --accent:#2563eb; --accent2:#0ea5e9;
+  --ok:#059669; --warn:#d97706; --bad:#dc2626;
+  --code-bg:#0f172a; --code-ink:#e2e8f0;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.85;font-size:16px;
+}
+.wrap{max-width:880px;margin:0 auto;padding:48px 20px 80px}
+header.hero{
+  background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 60%,#2563eb 100%);
+  color:#fff;border-radius:18px;padding:52px 44px;margin-bottom:40px;
+}
+header.hero h1{font-size:30px;line-height:1.4;font-weight:800;margin-bottom:14px}
+header.hero p.sub{color:#c7d7f5;font-size:16px}
+header.hero .meta{margin-top:22px;display:flex;flex-wrap:wrap;gap:10px}
+header.hero .tag{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:4px 14px;font-size:13px}
+h2{font-size:23px;margin:52px 0 18px;padding-left:14px;border-left:5px solid var(--accent);font-weight:800}
+h3{font-size:18px;margin:30px 0 12px;font-weight:700}
+p{margin:12px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:26px 30px;margin:18px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:20px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;text-align:center}
+.stat .num{font-size:26px;font-weight:800;color:var(--accent)}
+.stat .lbl{font-size:13px;color:var(--sub);margin-top:4px}
+.stat .num.ok{color:var(--ok)}
+/* timeline */
+.timeline{position:relative;margin:26px 0;padding-left:30px}
+.timeline::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--accent),var(--accent2))}
+.tl{position:relative;margin-bottom:20px}
+.tl::before{content:"";position:absolute;left:-27px;top:9px;width:12px;height:12px;border-radius:50%;background:var(--card);border:3px solid var(--accent)}
+.tl h4{font-size:16px;font-weight:700}
+.tl .when{font-size:12.5px;color:var(--sub);font-family:ui-monospace,monospace}
+.tl p{font-size:14.5px;color:#3c4350;margin:6px 0}
+.tl p b{color:var(--ink)}
+/* pit cards */
+.pit{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--bad);border-radius:12px;padding:20px 24px;margin:16px 0}
+.pit.fix{border-left-color:var(--ok)}
+.pit h4{font-size:16.5px;margin-bottom:8px}
+.pit .sev{display:inline-block;font-size:11.5px;border-radius:6px;padding:1px 8px;margin-left:8px;vertical-align:2px;background:#fee2e2;color:var(--bad);font-weight:700}
+.pit.fix .sev{background:#d1fae5;color:var(--ok)}
+.pit p{font-size:14.5px;color:#3c4350}
+.pit p b{color:var(--ink)}
+pre{background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:16px 18px;overflow-x:auto;font-size:13px;line-height:1.65;margin:12px 0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+p code,li code,td code{background:#eef1f5;border-radius:5px;padding:1px 7px;font-size:13.5px;color:#0f3a8a}
+pre code{background:none;padding:0;color:inherit;font-size:inherit}
+blockquote{border-left:4px solid var(--accent2);background:#eff8ff;border-radius:0 10px 10px 0;padding:14px 20px;margin:14px 0;color:#0c4a6e;font-size:14.5px}
+table{width:100%;border-collapse:collapse;margin:16px 0;background:var(--card);border-radius:10px;overflow:hidden;font-size:14px}
+th{background:#0f172a;color:#fff;text-align:left;padding:10px 14px;font-weight:600}
+td{padding:9px 14px;border-top:1px solid var(--line);vertical-align:top}
+tr:nth-child(even) td{background:#fafbfd}
+ul,ol{padding-left:24px;margin:10px 0}
+li{margin:6px 0}
+.checklist li{list-style:none;position:relative;padding-left:28px}
+.checklist li::before{content:"✅";position:absolute;left:0}
+.lesson{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 22px;margin:14px 0}
+.lesson b.t{color:var(--accent)}
+footer{margin-top:60px;text-align:center;color:var(--sub);font-size:13px;border-top:1px solid var(--line);padding-top:24px}
+@media (max-width:640px){
+  header.hero{padding:36px 24px}
+  header.hero h1{font-size:23px}
+  .wrap{padding:28px 14px 60px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>零接触装机实录：AI 远程把一台 Windows 台式机<br>变成 Ubuntu 双系统服务器</h1>
+  <p class="sub">全程无显示器、无 U 盘、无物理接触——一次跨越 30+ 小时、12 轮排错、1 次 GPT 抢险的远程装机战役完整复盘</p>
+  <div class="meta">
+    <span class="tag">📅 2026-11-02 ~ 11-03</span>
+    <span class="tag">🖥️ Ryzen 7 8845HS / 32G / 1TB NVMe</span>
+    <span class="tag">📍 人机距离：一整个城市</span>
+    <span class="tag">✍️ 人机协作：1 个人 + Claude Code</span>
+  </div>
+</header>
+
+<h2>战绩总览</h2>
+<div class="grid">
+  <div class="stat"><div class="num ok">100%</div><div class="lbl">远程完成（仅 3 次按电源键）</div></div>
+  <div class="stat"><div class="num">12</div><div class="lbl">轮安装排错</div></div>
+  <div class="stat"><div class="num">6</div><div class="lbl">基础设施级深坑</div></div>
+  <div class="stat"><div class="num">1</div><div class="lbl">次 GPT 分区表抢险</div></div>
+</div>
+
+<div class="card">
+  <p><b>最终交付：</b>一台物理上远在别处的小台式机（Ryzen 7 8845HS / 32G / 1TB NVMe），现在是 <b>Ubuntu 24.04.5 LTS</b> 服务器——WiFi 自动联网、SSH 密钥免密、开机自动向管理端上报 IP，同时 <b>Windows 11 完好保留</b>构成 GRUB 双系统。操作者全程只用了一台 MacBook 和一杯茶。</p>
+</div>
+
+<h2>背景与约束</h2>
+<div class="card">
+  <p>目标机器是一台放在别处的小台式机，原装 Windows 11 专业版。需求：装 Linux 做个人服务器，<b>保留 Windows 双系统</b>，且全程远程操作——人在 A 处，机器在 B 处，中间只有一张 office WiFi。初始可用条件只有一个：RDP 远程桌面能连上它。</p>
+  <p>这个约束决定了整个战役的技术形态：<b>装机必经的"重启 + 引导介质"环节，是远程操作的天然断层</b>。所有方案设计都围绕如何跨越这个断层展开。</p>
+</div>
+
+<h2>战役时间线</h2>
+<div class="timeline">
+  <div class="tl"><h4>🏗️ 打地基：RDP 里开 SSH</h4><div class="when">Day 1 晚</div>
+    <p>在 RDP 会话里以管理员 PowerShell 安装 OpenSSH Server、配防火墙、写入管理端公钥。期间踩了两个小坑（公钥行被吞空格导致拒登、PowerShell 编码乱码），全部快速排除。<b>从此 RDP 退役，SSH 成为唯一通道。</b></p></div>
+
+  <div class="tl"><h4>📐 摸底与规划：选定 autoinstall 无人值守方案</h4><div class="when">Day 1 晚</div>
+    <p>SSH 进去盘点：UEFI+GPT、单盘单 C 区、WiFi 联网（Intel AX200，Linux 原生支持）。用户确认"保留 Windows 双系统 + 静态 IP + WiFi"。方案定型：<b>Windows 侧缩盘 600GB → QEMU 直通物理盘引导 Ubuntu ISO → autoinstall 应答盘全自动安装</b>，避开"装机必重启"断层。</p></div>
+
+  <div class="tl"><h4>📦 下载 3.8GB ISO：网络被掐到 500KB/s</h4><div class="when">Day 1 深夜（约 2 小时）</div>
+    <p>试遍国内 4 大镜像、代理、10 线程并发——统统 ~500KB/s，是办公室 WiFi 的链路上限。最终用 10 并发分块 + SHA256 校验的持久 SSH 会话完成下载。<b>教训：先测链路上限再选方案，别跟物理规律较劲。</b></p></div>
+
+  <div class="tl"><h4>🚀 第一轮点火：连环三坑</h4><div class="when">Day 2</div>
+    <p>QEMU 启动脚本接连修掉三个坑（见下文深坑 ③④），VM 跑起来后，subiquity 安装器每轮都在不同位置报错——正式进入"一轮修一个、报错往后挪"的攻坚节奏。</p></div>
+
+  <div class="tl"><h4>💥 第 5-6 轮：GPT 分区表被清空（全程最大事故）</h4><div class="when">Day 2</div>
+    <p>autoinstall 存储配置补上 <code>ptable: gpt</code> 后，curtin 的磁盘处理器把"创建新分区表"理解成了 <code>sgdisk --zap-all</code>——<b>整张 GPT 分区表元数据被清零</b>。万幸：只清了表，没碰数据区，Windows 靠内存里的分区表还活着。</p></div>
+
+  <div class="tl"><h4>🚑 GPT 抢险：Python 手写分区表</h4><div class="when">Day 2</div>
+    <p>趁 Windows 内存表还活着，导出全部 4 个分区的精确偏移/大小/类型 GUID/分区 GUID/磁盘 GUID，在 Mac 上用 Python 重建完整 GPT 结构（保护 MBR + 主备头 + CRC32 条目数组），PowerShell 原位写回。rescan 后分区带原 GUID 回归，<b>重启验证通过，数据零损失</b>。</p></div>
+
+  <div class="tl"><h4>🔧 第 8-11 轮：curtin 三连 + 缓存战争</h4><div class="when">Day 2 深夜</div>
+    <p>偏移量被忽略 → Windows 侧直接建好分区让它 preserve；分区号被 Windows 重排 → 逐轮校准；<code>wpasupplicant</code> 没装进 target → chroot 补装。宿主 Windows 与 guest 双缓存的读写冲突贯穿始终，靠"关键动作前重启宿主清缓存"续命。</p></div>
+
+  <div class="tl"><h4>💀 第 12 轮：装好了，但机器"消失"了</h4><div class="when">Day 2 深夜</div>
+    <p>系统完整写入、GRUB 装好、用户建好——重启后 Ubuntu 起来了，WiFi 却怎么都连不上，机器成了"活着但够不着"的黑盒，连 ping 都不响应。战斗暂停，等用户物理按电源键。</p></div>
+
+  <div class="tl"><h4>🔍 真相：两个叠加的 WiFi 根因</h4><div class="when">Day 3</div>
+    <p>通过诊断 shell 读真实日志：<b>① netplan 的 networkd 后端不支持 <code>match:</code> 通配符配 WiFi</b>（每次开机 netplan apply 都 exit 78，WiFi 从未被配置）；<b>② target 里根本没装 wpasupplicant 包</b>。两个都修掉后，<code>iw dev wlp2s0 link</code> 显示 SSID='FSWLAN' 关联成功、DHCP 拿到 172.26.7.128。</p></div>
+
+  <div class="tl"><h4>📡 电话回家 + 最终验收</h4><div class="when">Day 3</div>
+    <p>机器落在未知网段 172.26.x，管理端在 172.28.x。给 target 部署 phonehome 服务：开机后自动 <code>curl http://172.28.0.216:8000/ip-xxx</code> 向管理端报告自己的 IP。日志亮起的瞬间，SSH 直连成功——hostname 改为 ubuntu-server、GRUB 补上 Windows 菜单项、全项验收通过。<b>战役结束。</b></p></div>
+</div>
+
+<h2>六大深坑复盘</h2>
+
+<div class="pit"><h4>① Windows OpenSSH 公钥拒登<span class="sev">入门坑</span></h4>
+  <p>administrators 用户的公钥必须放 <code>C:\ProgramData\ssh\administrators_authorized_keys</code>（不是用户家目录），且 ACL 只允许 SYSTEM + Administrators。另外粘贴公钥时行内空格被吞（<code>...RmpBxzhangwch@...</code>）整行作废——密钥类内容务必写完后 readback 校验。</p></div>
+
+<div class="pit"><h4>② SSH 会话断开 = 子进程全灭<span class="sev">架构坑</span></h4>
+  <p>Windows sshd 会随会话终止清理整棵进程树，<code>Start-Process</code> 分离的进程也逃不掉。长任务（下载、QEMU）必须二选一：<b>① 计划任务 + /RU /RP 存凭据方式启动</b>（/RL HIGHEST）；② 保持 SSH 会话存活的持久会话内前台运行。另外：非交互会话里 VNC 键盘映射会被拒（QEMU 加 <code>-vnc</code> 直接启动失败）。</p></div>
+
+<div class="pit"><h4>③ PowerShell 与 QEMU 的三连暗箭<span class="sev">细节坑</span></h4>
+  <p><code>Start-Process -ArgumentList</code> 数组<b>不给含空格的元素加引号</b>（<code>C:\Program Files\...</code> 被从空格劈开）；QEMU 11.1 的 <code>-bios</code> 加载 OVMF 失败（改用 <code>-drive if=pflash</code> 对）；sendkey 组合键必须单条命令（<code>sendkey alt-sysrq-o</code>，拆开发等于没按）。</p></div>
+
+<div class="pit fix"><h4>④ GPT 被清空：autoinstall 双标志缺一不可<span class="sev">事故级</span></h4>
+  <p>给<b>已有系统的盘</b>写自定义 storage，disk 条目必须同时有 <code>ptable: gpt</code>（否则 curtin 走不进分区分支）和 <code>preserve: true</code>（否则磁盘处理器直接 zap 全表）。只写前者 = 触发清盘。抢险要点：趁内存表活着导出精确布局 → 重建 GPT 结构（CRC32 用 zlib）→ 单 OS 侧原位写回 → rescan 验证。<b>数据区永远没被碰到。</b></p></div>
+
+<div class="pit"><h4>⑤ 宿主/guest 双缓存战争<span class="sev">架构坑</span></h4>
+  <p>QEMU 直通 + Windows 宿主同盘并行：guest 写入经宿主 writeback 缓存不即时落盘；<code>cache=directsync</code> 反而让 guest 读到全零；Windows 改写分区表后 guest 读到新旧混合的脏页。<b>对策：关键节点前重启宿主清缓存；跨系统对分区永远以 GUID/偏移为准而非序号</b>（Windows 按偏移重排分区号，Linux 按 GPT 条目序，两边对不上）。</p></div>
+
+<div class="pit fix"><h4>⑥ WiFi 双根因：netplan 不支持 match + wpasupplicant 缺失<span class="sev">隐蔽级</span></h4>
+  <p>两个独立问题叠加，表面症状完全一样（WiFi 不上线），必须看日志才能拆开：<b>① netplan 的 networkd 后端不支持 wifi 用 <code>match:</code> 通配符，只能写死接口名</b>（<code>wlp2s0</code>，违反就 exit 78 静默失败）；<b>② target 缺 wpasupplicant 包</b>（curthooks 只装了 GRUB 系列没装它）。以及最后的大坑：机器落在未知网段——解法是给 target 部署 phonehome 服务，开机自动向管理端上报 IP。</p></div>
+
+<h2>方法论：远程装机的正确姿势</h2>
+<div class="card">
+  <ul class="checklist">
+    <li><b>SSH 先行</b>：RDP 只用来开一次 SSH，之后所有操作命令化、可审计、可重放</li>
+    <li><b>长任务用计划任务存凭据启动</b>，或者接受"会话保活"模式——绝不依赖 Start-Process 分离</li>
+    <li><b>下载前先测链路上限</b>，用多并发分块 + 强校验（SHA256），校验不过不进下一步</li>
+    <li><b>autoinstall 双标志</b>：已有系统的盘 = <code>ptable: gpt</code> + <code>preserve: true</code> 同时写；分区直接在宿主侧建好让安装器 preserve，绕开 curtin 的偏移计算</li>
+    <li><b>分区身份用 GUID 不用序号</b>——Windows 和 Linux 的分区编号规则不同且会变</li>
+    <li><b>跨 OS 同盘操作，写后必刷盘、读前怀疑缓存</b>；大节点之间重启宿主清缓存是廉价保险</li>
+    <li><b>netplan WiFi：networkd 后端只认接口名</b>，并且确认 wpasupplicant 包真的装进去了</li>
+    <li><b>phonehome 机制</b>：给无屏设备部署开机报 IP 的服务，管理端一个 HTTP 日志就能找回它——这是整个战役最值钱的设计</li>
+    <li><b>出黑盒先读日志再动手</b>：诊断 shell（故意秒失败的 seed 是免费入场券）+ 真实 syslog，比任何猜测都值钱</li>
+  </ul>
+</div>
+
+<h2>最终交付清单</h2>
+<table>
+  <tr><th>项目</th><th>状态</th></tr>
+  <tr><td>系统</td><td>Ubuntu 24.04.5 LTS（hostname: ubuntu-server），590G ext4 挂载 /，余 544G</td></tr>
+  <tr><td>双系统</td><td>Windows 11 完好保留（330G NTFS），GRUB 菜单 5 秒可选，os-prober 自动发现</td></tr>
+  <tr><td>网络</td><td>WiFi DHCP（FSWLAN/FSDevWLAN 双热点候选），开机 phonehome 自动上报 IP</td></tr>
+  <tr><td>远程管理</td><td>SSH 密钥免密 + sudo NOPASSWD，管理端日志可随时找回设备 IP</td></tr>
+  <tr><td>引导</td><td>UEFI：shim → GRUB（Secure Boot 兼容），Windows Boot Manager 兜底</td></tr>
+</table>
+
+<blockquote>本次战役由 1 个人 + Claude Code 协作完成：人负责 3 次电源键、授权决策和网络情报（热点密码）；AI 负责其余全部——12 轮排错、GPT 抢险脚本、跨系统诊断和最后的电话回家设计。</blockquote>
+
+<h2>附录：关键武器库</h2>
+<div class="card">
+<h3>故意秒失败的 seed（免费诊断 shell 入场券）</h3>
+<pre><code># storage 配置故意少一个 device 键
+- {id: root-part, type: partition, number: 4, ...}   # ← 没有 device:
+# subiquity 在 convert 阶段立即抛错，零写盘，
+# "Press enter to start a shell" = 拿到 live 环境 root shell</code></pre>
+
+<h3>Python 手写 GPT（抢险核心）</h3>
+<pre><code>import struct, zlib, uuid
+# GUID 转 GPT 混合端序：uuid.UUID(g).bytes_le
+# 主头: "EFI PART" + rev 1.0 + 92字节头 + CRC32(头) + 备份LBA + 磁盘GUID
+#       + 条目数组LBA + 128条目×128B + CRC32(条目)
+# 写回: LBA0(PMBR) LBA1(主头) LBA2-33(条目) 尾部(备份条目+头)</code></pre>
+
+<h3>phonehome（无屏设备找回）</h3>
+<pre><code># target 侧 systemd oneshot，开机后 12×10s 窗口内上报所有全局 IP
+ip -4 -o addr show scope global | while read _ addr _; do
+  wget -qO- "http://&lt;管理端&gt;:8000/ip-${addr%/*}"
+done
+# 管理端只需一个 http.server，日志里的 GET 路径就是设备 IP</code></pre>
+
+<h3>netplan WiFi 正确姿势（networkd 后端）</h3>
+<pre><code>network:
+  version: 2
+  wifis:
+    wlp2s0:                    # ✅ 显式接口名（match: ❌ 不支持）
+      access-points:
+        "SSID-A": {password: "..."}
+      dhcp4: true</code></pre>
+</div>
+
+<footer>
+  <p>_itblog · 零接触装机实录 · 2026-11-03 · 由 Claude Code 全程操刀并记录_</p>
+</footer>
+
+</div>
+</body>
+</html>
